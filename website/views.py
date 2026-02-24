@@ -9,11 +9,13 @@ views = Blueprint('views', __name__)
 
 @views.route('/')
 def home():
-    return render_template('home.html')
+    first_name = current_user.first_name if current_user.is_authenticated else None
+    last_name = current_user.last_name if current_user.is_authenticated else None
+    return render_template('home.html', user=current_user, first_name=first_name, last_name=last_name)
 
 @views.route('/aboutus')
 def aboutus():
-    return render_template('about.html')
+    return render_template('about.html',  user=current_user)
 
 @views.route('/login', methods=['GET', 'POST'])
 def login():
@@ -77,10 +79,36 @@ def signup():
     return render_template('signup.html')
 
 
-@views.route('/booking')
+@views.route('/booking', methods=['GET', 'POST'])
 @login_required
 def booking():
-    return render_template('booking.html', User=current_user)
+    if request.method == 'POST':
+        import datetime
+        booking_date_str = request.form.get('date')
+        adults = request.form.get('adults', type=int)
+        children = request.form.get('children', type=int)
+        if not booking_date_str:
+            flash('Please select a booking date.', category='error')
+        elif (adults is None or adults < 0) or (children is None or children < 0):
+            flash('Ticket numbers must be zero or positive.', category='error')
+        else:
+            from .models import Booking
+            try:
+                booking_date = datetime.datetime.strptime(booking_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Invalid date format.', category='error')
+                return render_template('booking.html', user=current_user)
+            new_booking = Booking(
+                bookingdate=booking_date,
+                adultticket=adults,
+                childticket=children,
+                user_id=current_user.id
+            )
+            db.session.add(new_booking)
+            db.session.commit()
+            flash('Booking successful!', category='success')
+            return redirect(url_for('views.booking'))
+    return render_template('booking.html', user=current_user)
 
 
 

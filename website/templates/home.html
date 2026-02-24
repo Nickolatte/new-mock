@@ -34,7 +34,13 @@
   </a>
 
 </div>
+
 <h3>Welcome to Riget Zoo Adventure</h3>
+{% if user.is_authenticated %}
+  <p>Welcome, <strong>{{ first_name }} {{ last_name }}</strong>!</p>
+{% endif %}
+<br>
+<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. ...</p>
 <br>
 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt, asperiores laborum? Fugit, necessitatibus suscipit veritatis nemo dignissimos eos et excepturi nesciunt quod impedit error ab facere laudantium ipsam voluptate expedita possimus nihil cumque tempore debitis ex voluptatibus deleniti in. Quos dolore, tempora veritatis deleniti libero ab, fugit quibusdam quo commodi optio incidunt necessitatibus id rem, rerum itaque. Eos, dicta! Recusandae obcaecati quo, fugit, pariatur nobis quae blanditiis facilis officia similique animi laudantium eligendi deserunt quam natus sit sint labore quisquam. Aliquid error delectus sed voluptates sequi amet illum magni, fugiat officia recusandae vitae facilis sapiente voluptatibus, voluptatem dolorum officiis praesentium?</p>
 
