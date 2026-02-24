@@ -72,11 +72,10 @@ def signup():
                 password1, method='pbkdf2:sha256'))
             db.session.add(new_user)
             db.session.commit()
-            login_user(user, remember=True)
-            flash('Account created!', category='success')
-            return redirect(url_for('views.signup'))
+            flash('Account created! Please log in.', category='success')
+            return redirect(url_for('views.login'))
 
-    return render_template('signup.html')
+    return render_template('signup.html', user=current_user)
 
 
 @views.route('/booking', methods=['GET', 'POST'])
