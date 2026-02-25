@@ -111,3 +111,9 @@ def booking():
 
 
 
+@views.route('/hotelbooking', methods=['GET', 'POST'])
+@login_required
+def hotelbooking():
+     if request.method == 'POST':
+         
+        return render_template('hotelbooking.html', user=current_user)

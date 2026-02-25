@@ -11,6 +11,13 @@ class Booking(db.Model):
     bookingdate = db.Column(db.Date, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+class HotelBooking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    checkin = db.Column(db.Date, nullable=False)
+    checkout = db.Column(db.Date, nullable=False)
+    roomtype = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -20,4 +27,10 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(150))
     booking = db.relationship('Booking')
 
-    
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    room_type = db.Column(db.String(50), nullable=False)
+    max_adults = db.Column(db.Integer, nullable=False)
+    max_children = db.Column(db.Integer, nullable=False)
+    is_available = db.Column(db.Boolean, default=True)
+

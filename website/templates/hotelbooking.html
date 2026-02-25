@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% block title %}Booking{% endblock %} {% block content
+%}
+
+<h2 align="center" class="text-center">Book Hotel</h2>
+
+<form method="POST" class="mt-4">
+
+  <label>Check-in Date</label>
+  <input 
+    type="date" 
+    class="date_str" 
+    name="checkin" 
+    class="form-control" required>
+
+  <label>Check-out Date</label>
+  <input 
+    type="date" 
+    class="date_str" 
+    name="checkout" 
+    class="form-control" required>
+
+    <label class="mt-3">Adults</label>
+
+  <input 
+    type="number" 
+    class="adulthotelticket" 
+    name="adulthotelticket" 
+    class="form-control"
+    min="1" 
+    value="1">
+
+  <label class="mt-3">Children</label>
+  <input 
+    type="number" 
+    class="childrenthotelticket" 
+    name="childrenthotelticket" 
+    class="form-control" 
+    min="0" 
+    value="0">
+
+  <button type="submit" class="btn btn-primary mt-4 w-100">
+    Find Rooms
+  </button>
+
+</form>
+
+
+{% endblock %}

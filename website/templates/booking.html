@@ -1,19 +1,40 @@
 {% extends "base.html" %} {% block title %}Booking{% endblock %} {% block content
 %}
-<h2 class="text-center">Book Tickets</h2>
+<h2 align="center" class="text-center">Book Zoo Tickets</h2>
 
 <form method="POST" class="mt-4">
-  <label>Date</label>
-  <input type="date" class="date_str" name="date" class="form-control" required>
 
+  <label>Date</label>
+  <input 
+    type="date" 
+    class="date_str form-control" required
+    name="date" >
+    
+
+    
   <label class="mt-3">Adults</label>
-  <input type="number" class="adultticket" name="adults" class="form-control" min="0" value="0">
+  <input 
+    type="number" 
+    class="adultticket form-control" required
+    name="adults" 
+    min="1" 
+    value="1">
 
   <label class="mt-3">Children</label>
-  <input type="number" class="childrenticket" name="children" class="form-control" min="0" value="0">
+  <input 
+    type="number" 
+    class="childrenticket form-control" 
+    name="children" 
+    min="0" 
+    value="0">
+
+  
+
 
   <button type="submit" class="btn btn-primary mt-4 w-100">
     Book Now
   </button>
+
+  <h4> Need a Hotel Room? Book <a href="/hotelbooking">here</a></h4>
 </form>
 {% endblock %}

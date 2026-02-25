@@ -42,14 +42,40 @@
           >
           <a class="nav-item nav-link" id="about" href="/aboutus"> About Us</a>
           <a class="nav-item nav-link" id="booking" href="/booking">Booking</a>
-          <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+        </div>
+        <div class="navbar-nav ml-auto">
+          <div class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="moreDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              {{ current_user.first_name }} {{ current_user.last_name }}
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="moreDropdown">
+              {% if user.is_authenticated %}
+              
+              {% endif %}
+              
+              <a class="dropdown-item" href="/bookedtickets">Booked Tickets</a>
+              <a class="dropdown-item" href="/usersettings">Settings</a>
+              <a class="dropdown-item" href="/logout" style="color: red;">Logout</a>
+            </div>
+          </div>
+        </div>
           {% else %}
+        <div class="navbar-nav">
           <a class="nav-item nav-link" id="home" href="/"
             >Riget Zoo Adventure</a
           >
           <a class="nav-item nav-link" id="about" href="/aboutus"> About Us</a>
           <a class="nav-item nav-link" id="login" href="/login"> Login</a>
-          <a class="nav-item nav-link" id="booking" href="/booking">Booking</a>
+          <a class="nav-item nav-link" id="booking" href="/booking" >Booking</a>
+        </div>
           {% endif %}
         </div>
       </div>
