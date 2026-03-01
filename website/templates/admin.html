@@ -1,0 +1,106 @@
+{% extends "base.html" %} {% block title %}Admin Dashboard{% endblock %} {%
+block content %}
+<h1>Admin Dashboard</h1>
+<p>Welcome, {{ user.first_name }} {{ user.last_name }}</p>
+
+<h2>Users</h2>
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Name</th>
+      <th>Role</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.email }}</td>
+      <td>{{ u.first_name }} {{ u.last_name }}</td>
+      <td>{% if u.is_admin %}Admin{% else %}User{% endif %}</td>
+      <td>
+        {% if u.id != user.id %}
+        <form
+          method="post"
+          action="{{ url_for('views.toggle_admin', user_id=u.id) }}"
+        >
+          <button type="submit" class="btn btn-sm btn-secondary">
+            {% if u.is_admin %}Revoke admin{% else %}Make admin{% endif %}
+          </button>
+        </form>
+        {% else %}-{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Rooms</h2>
+<a class="btn btn-primary" href="{{ url_for('views.add_room') }}">Add Room</a>
+<ul>
+  {% for r in rooms %}
+  <li>{{ r.room_number }} ({{ r.room_type }}) - ${{ r.price_per_night }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Hotel Bookings</h2>
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th>User Email</th>
+      <th>User ID</th>
+      <th>Room Number</th>
+      <th>Check-in</th>
+      <th>Check-out</th>
+      <th>Adults</th>
+      <th>Children</th>
+      <th>Total Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for hb in hotel_bookings %}
+    <tr>
+      <td>{{ hb.user.email }}</td>
+      <td>{{ hb.user.id }}</td>
+      <td>{{ hb.room.room_number }}</td>
+      <td>{{ hb.checkin }}</td>
+      <td>{{ hb.checkout }}</td>
+      <td>{{ hb.adults }}</td>
+      <td>{{ hb.children }}</td>
+      <td>
+        ${{ hb.room.price_per_night * ((hb.checkout - hb.checkin).days) }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Ticket Bookings</h2>
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th>User Email</th>
+      <th>User ID</th>
+      <th>Adult Tickets</th>
+      <th>Child Tickets</th>
+      <th>Booking Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tb in bookings %}
+    <tr>
+      <td>{{ tb.user.email }}</td>
+      <td>{{ tb.user.id }}</td>
+      <td>{{ tb.adultticket }}</td>
+      <td>{{ tb.childticket }}</td>
+      <td>{{ tb.bookingdate }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p>Total hotel bookings: {{ hotel_bookings|length }}</p>
+<p>Total ticket bookings: {{ bookings|length }}</p>
+
+{% endblock %}

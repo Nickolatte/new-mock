@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block title %}Booking{% endblock %} {% block
+content %}
+
+<h2>Available Rooms</h2>
+
+{% if rooms %} {% for room in rooms %}
+<div class="card p-3 mb-3">
+  <h4>{{ room.room_type }}</h4>
+  <p>Room Number: {{ room.room_number }}</p>
+  <p>Max Adults: {{ room.max_adults }}</p>
+  <p>Max Children: {{ room.max_children }}</p>
+  <p>Price per night: £{{ room.price_per_night }}</p>
+
+  <form
+    method="POST"
+    action="{{ url_for('views.confirm_booking', room_id=room.id) }}"
+  >
+    <input type="hidden" name="checkin" value="{{ checkin }}" />
+    <input type="hidden" name="checkout" value="{{ checkout }}" />
+    <input type="hidden" name="adults" value="{{ adults }}" />
+    <input type="hidden" name="children" value="{{ children }}" />
+
+    <button class="btn btn-success">Book This Room</button>
+  </form>
+</div>
+{% endfor %} {% else %}
+<p>No rooms available for selected dates.</p>
+{% endif %} {% endblock %}

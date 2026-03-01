@@ -61,8 +61,11 @@
               
               {% endif %}
               
-              <a class="dropdown-item" href="/bookedtickets">Booked Tickets</a>
+              <a class="dropdown-item" href="/my-bookings">My Bookings</a>
               <a class="dropdown-item" href="/usersettings">Settings</a>
+              {% if user.is_admin %}
+              <a class="dropdown-item" href="/admin">Admin</a>
+              {% endif %}
               <a class="dropdown-item" href="/logout" style="color: red;">Logout</a>
             </div>
           </div>

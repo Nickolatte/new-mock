@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% block title %}My Bookings{% endblock %} {% block
+content %}
+
+<h2 class="text-center mt-4">My Bookings</h2>
+
+<h3 class="mt-4">Ticket Bookings</h3>
+{% if ticket_bookings %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Booking Date</th>
+      <th>Adults</th>
+      <th>Children</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in ticket_bookings %}
+    <tr>
+      <td>{{ b.bookingdate }}</td>
+      <td>{{ b.adultticket }}</td>
+      <td>{{ b.childticket }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No ticket bookings yet.</p>
+{% endif %}
+
+<h3 class="mt-4">Hotel Bookings</h3>
+{% if hotel_bookings %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Room Number</th>
+      <th>Room Type</th>
+      <th>Check-in</th>
+      <th>Check-out</th>
+      <th>Adults</th>
+      <th>Children</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for h in hotel_bookings %}
+    <tr>
+      <td>{{ h.room.room_number }}</td>
+      <td>{{ h.room.room_type }}</td>
+      <td>{{ h.checkin }}</td>
+      <td>{{ h.checkout }}</td>
+      <td>{{ h.adults }}</td>
+      <td>{{ h.children }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No hotel bookings yet.</p>
+{% endif %} {% endblock %}
