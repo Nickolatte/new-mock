@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db   
@@ -96,6 +96,8 @@ def signup():
     return render_template('signup.html', user=current_user)
 
 
+from flask import session, redirect, url_for
+
 @views.route('/booking', methods=['GET', 'POST'])
 @login_required
 def booking():
@@ -104,42 +106,37 @@ def booking():
         booking_date_str = request.form.get('date')
         adults = request.form.get('adults', type=int)
         children = request.form.get('children', type=int)
+
         if not booking_date_str:
-            flash('Please select a booking date.', category='error')
-        elif (adults is None or adults < 0) or (children is None or children < 0):
-            flash('Ticket numbers must be zero or positive.', category='error')
-        else:
-            from .models import Booking
-            try:
-                booking_date = datetime.datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-            except ValueError:
-                flash('Invalid date format.', category='error')
-                return render_template('booking.html', user=current_user)
-            new_booking = Booking(
-                bookingdate=booking_date,
-                adultticket=adults,
-                childticket=children,
-                user_id=current_user.id
-            )
-            db.session.add(new_booking)
-            db.session.commit()
-            flash('Booking successful!', category='success')
+            flash('Please select a booking date.', 'error')
             return redirect(url_for('views.booking'))
+
+        total_price = adults*20 + children*10
+
+
+        session['booking'] = {
+            'type': 'ticket',
+            'bookingdate': booking_date_str,
+            'adults': adults,
+            'children': children,
+            'total_price': total_price
+        }
+
+        return redirect(url_for('views.payment'))
+
     return render_template('booking.html', user=current_user)
-
-
 
 @views.route('/hotelbooking', methods=['GET', 'POST'])
 @login_required
 def hotelbooking():
-    if request.method == 'POST':
-        from datetime import datetime
+    from datetime import datetime
+    from .models import Room, HotelBooking
 
+    if request.method == 'POST':
         checkin_str = request.form.get('checkin')
         checkout_str = request.form.get('checkout')
         adults = request.form.get('adulthotelticket', type=int)
         children = request.form.get('childrenthotelticket', type=int)
-
 
         checkin = datetime.strptime(checkin_str, '%Y-%m-%d').date()
         checkout = datetime.strptime(checkout_str, '%Y-%m-%d').date()
@@ -148,15 +145,11 @@ def hotelbooking():
             flash("Checkout must be after checkin.", "error")
             return redirect(url_for('views.hotelbooking'))
 
-
-        from .models import Room, HotelBooking
-
         suitable_rooms = Room.query.filter(
             Room.max_adults >= adults,
             Room.max_children >= children
         ).all()
 
- 
         available_rooms = []
         for room in suitable_rooms:
             overlapping = HotelBooking.query.filter(
@@ -164,7 +157,6 @@ def hotelbooking():
                 HotelBooking.checkout > checkin,
                 HotelBooking.checkin < checkout
             ).first()
-
             if not overlapping:
                 available_rooms.append(room)
 
@@ -181,11 +173,13 @@ def hotelbooking():
 
 
 
+
+
 @views.route('/confirm-booking/<int:room_id>', methods=['POST'])
 @login_required
 def confirm_booking(room_id):
     from datetime import datetime
-    from .models import HotelBooking, Room
+    from .models import Room
 
     checkin = datetime.strptime(request.form.get('checkin'), '%Y-%m-%d').date()
     checkout = datetime.strptime(request.form.get('checkout'), '%Y-%m-%d').date()
@@ -194,32 +188,133 @@ def confirm_booking(room_id):
 
     room = Room.query.get_or_404(room_id)
 
+    total_price = ((checkout - checkin).days) * room.price_per_night
 
-    overlapping = HotelBooking.query.filter(
-        HotelBooking.room_id == room.id,
-        HotelBooking.checkout > checkin,
-        HotelBooking.checkin < checkout
-    ).first()
 
-    if overlapping:
-        flash("Sorry, this room was just booked.", "error")
-        return redirect(url_for('views.hotelbooking'))
+    session['booking'] = {
+        'type': 'hotel',
+        'room_id': room.id,
+        'checkin': checkin.strftime('%Y-%m-%d'),
+        'checkout': checkout.strftime('%Y-%m-%d'),
+        'adults': adults,
+        'children': children,
+        
+    }
 
-    new_booking = HotelBooking(
-        checkin=checkin,
-        checkout=checkout,
-        adults=adults,
-        children=children,
-        room_id=room.id,
-        user_id=current_user.id
-    )
+    return redirect(url_for('views.payment'))
 
-    db.session.add(new_booking)
+
+from flask import session, flash, redirect, url_for
+
+@views.route('/payment', methods=['GET', 'POST'])
+@login_required
+def payment():
+    from .models import Booking, HotelBooking, Room
+    import datetime
+
+    booking = session.get('booking')
+    if not booking:
+        flash("No booking found.", "error")
+        return redirect(url_for('views.booking'))
+
+    room = None
+    if booking['type'] == 'hotel':
+        room = Room.query.get(booking['room_id'])
+   
+        checkin = datetime.datetime.strptime(booking['checkin'], '%Y-%m-%d').date()
+        checkout = datetime.datetime.strptime(booking['checkout'], '%Y-%m-%d').date()
+        total_price = (checkout - checkin).days * room.price_per_night
+        booking['total_price'] = total_price
+
+    if request.method == 'POST':
+        card_number = request.form.get('card_number', '').replace(' ', '')
+        expiry = request.form.get('expiry')
+        cvc = request.form.get('cvc')
+
+        if len(card_number) != 16 or len(cvc) != 3:
+            flash("Invalid card details.", "error")
+            return redirect(url_for('views.payment'))
+
+
+        if booking['type'] == 'ticket':
+            new_booking = Booking(
+                bookingdate=datetime.datetime.strptime(booking['bookingdate'], '%Y-%m-%d').date(),
+                adultticket=booking['adults'],
+                childticket=booking['children'],
+                total_price=booking['total_price'],
+                paid=True,
+                user_id=current_user.id
+            )
+        else:  
+            new_booking = HotelBooking(
+                checkin=datetime.datetime.strptime(booking['checkin'], '%Y-%m-%d').date(),
+                checkout=datetime.datetime.strptime(booking['checkout'], '%Y-%m-%d').date(),
+                adults=booking['adults'],
+                children=booking['children'],
+                total_price=booking['total_price'],
+                paid=True,
+                room_id=room.id,
+                user_id=current_user.id
+            )
+
+        db.session.add(new_booking)
+        db.session.commit()
+        session.pop('booking')
+
+        flash("Booking successfully completed and paid!", "success")
+        return redirect(url_for('views.my_bookings'))
+
+    return render_template("payment.html", booking=booking, room=room)
+
+
+
+@views.route('/my-bookings')
+@login_required
+def my_bookings():
+    from .models import Booking, HotelBooking
+
+
+    ticket_bookings = Booking.query.filter_by(user_id=current_user.id).all()
+
+    hotel_bookings = HotelBooking.query.filter_by(user_id=current_user.id).all()
+
+    return render_template('my_bookings.html', ticket_bookings=ticket_bookings, hotel_bookings=hotel_bookings, user=current_user)
+
+
+#Admin functions
+
+@views.route('/admin')
+@login_required
+def admin():
+
+    if not current_user.is_admin:
+        flash('You are not authorized to view that page.', 'error')
+        return redirect(url_for('views.home'))
+
+    from .models import Booking, HotelBooking, Room
+
+    users = User.query.all()
+    bookings = Booking.query.all()
+    hotel_bookings = HotelBooking.query.all()
+    rooms = Room.query.all()
+
+    return render_template('admin.html', users=users, bookings=bookings,
+                           hotel_bookings=hotel_bookings, rooms=rooms,
+                           user=current_user)
+
+
+@views.route('/toggle-admin/<int:user_id>', methods=['POST'])
+@login_required
+def toggle_admin(user_id):
+    if not current_user.is_admin:
+        flash('Unauthorized', 'error')
+        return redirect(url_for('views.home'))
+
+    user = User.query.get_or_404(user_id)
+    user.is_admin = not user.is_admin
     db.session.commit()
-
-    flash("Room booked successfully!", "success")
-    return redirect(url_for('views.home'))
-
+    flash(f"{user.email} admin status changed.", "success")
+    return redirect(url_for('views.admin'))
 
 @views.route('/add-room', methods=['GET', 'POST'])
 @login_required
@@ -279,53 +374,3 @@ def add_room():
 
 
     return render_template('add_room.html' , user=current_user )
-
-
-@views.route('/my-bookings')
-@login_required
-def my_bookings():
-    from .models import Booking, HotelBooking
-
-
-    ticket_bookings = Booking.query.filter_by(user_id=current_user.id).all()
-
-    hotel_bookings = HotelBooking.query.filter_by(user_id=current_user.id).all()
-
-    return render_template('my_bookings.html', ticket_bookings=ticket_bookings, hotel_bookings=hotel_bookings, user=current_user)
-
-
-#Admin functions
-
-@views.route('/admin')
-@login_required
-def admin():
-
-    if not current_user.is_admin:
-        flash('You are not authorized to view that page.', 'error')
-        return redirect(url_for('views.home'))
-
-    from .models import Booking, HotelBooking, Room
-
-    users = User.query.all()
-    bookings = Booking.query.all()
-    hotel_bookings = HotelBooking.query.all()
-    rooms = Room.query.all()
-
-    return render_template('admin.html', users=users, bookings=bookings,
-                           hotel_bookings=hotel_bookings, rooms=rooms,
-                           user=current_user)
-
-
-@views.route('/toggle-admin/<int:user_id>', methods=['POST'])
-@login_required
-def toggle_admin(user_id):
-    if not current_user.is_admin:
-        flash('Unauthorized', 'error')
-        return redirect(url_for('views.home'))
-
-    user = User.query.get_or_404(user_id)
-    user.is_admin = not user.is_admin
-    db.session.commit()
-    flash(f"{user.email} admin status changed.", "success")
-    return redirect(url_for('views.admin'))
-

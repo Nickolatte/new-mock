@@ -17,7 +17,10 @@ class Booking(db.Model):
     adultticket = db.Column(db.Integer)
     childticket = db.Column(db.Integer)
     bookingdate = db.Column(db.Date, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)   
+    paid = db.Column(db.Boolean, default=False)         
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,12 +38,10 @@ class HotelBooking(db.Model):
     checkout = db.Column(db.Date, nullable=False)
     adults = db.Column(db.Integer, nullable=False)
     children = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)   
+    paid = db.Column(db.Boolean, default=False)         
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='hotel_bookings', lazy=True)
 
 
-class TicketPrice(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    adult = db.Column(db.Float, default=20.0)   
-    child = db.Column(db.Float, default=10.0)   

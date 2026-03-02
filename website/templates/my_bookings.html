@@ -11,6 +11,7 @@ content %}
       <th>Booking Date</th>
       <th>Adults</th>
       <th>Children</th>
+      <th>Total Price</th>
     </tr>
   </thead>
   <tbody>
@@ -19,6 +20,7 @@ content %}
       <td>{{ b.bookingdate }}</td>
       <td>{{ b.adultticket }}</td>
       <td>{{ b.childticket }}</td>
+      <td>£{{ b.adultticket * 17.50 + b.childticket * 14.50 }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -38,6 +40,7 @@ content %}
       <th>Check-out</th>
       <th>Adults</th>
       <th>Children</th>
+      <th>Total Price</th>
     </tr>
   </thead>
   <tbody>
@@ -49,6 +52,7 @@ content %}
       <td>{{ h.checkout }}</td>
       <td>{{ h.adults }}</td>
       <td>{{ h.children }}</td>
+      <td>£{{ (h.checkout - h.checkin).days * h.room.price_per_night }}</td>
     </tr>
     {% endfor %}
   </tbody>

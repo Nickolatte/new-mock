@@ -1,80 +1,122 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% block title %}Payment{% endblock %}
+{% block content %}
 
-<div class="container mt-5" style="max-width: 500px">
-  <h2 class="mb-4 text-center">Payment Details</h2>
+<h2 class="text-center mt-4">Payment</h2>
 
-  <form method="POST">
-    <!-- Card Number -->
-    <div class="mb-3">
-      <label class="form-label">Card Number</label>
-      <input
-        type="text"
-        name="card_number"
-        id="card_number"
-        class="form-control"
-        maxlength="19"
-        placeholder="1234 5678 9012 3456"
-        required
-      />
-    </div>
+{% if booking %}
+<div class="mt-4">
+  <h4>Booking Summary:</h4>
 
-    <!-- Expiry -->
-    <div class="mb-3">
-      <label class="form-label">Expiry (MM/YY)</label>
-      <input
-        type="text"
-        name="expiry"
-        id="expiry"
-        class="form-control"
-        maxlength="5"
-        placeholder="MM/YY"
-        required
-      />
-    </div>
+  {% if booking.type == 'ticket' %}
+    <p>Date: {{ booking.bookingdate }}</p>
+    <p>Adults: {{ booking.adults }} (£17.50 each)</p>
+    <p>Children: {{ booking.children }} (£14.50 each)</p>
+    <p><strong>Total: £{{ booking.total_price }}</strong></p>
 
-    <!-- CVV -->
-    <div class="mb-3">
-      <label class="form-label">CVV</label>
-      <input
-        type="text"
-        name="cvv"
-        class="form-control"
-        maxlength="4"
-        placeholder="123"
-        required
-      />
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Pay Now</button>
-  </form>
+  {% elif booking.type == 'hotel' %}
+    {% if room %}
+      <p>Room: {{ room.room_number }} - {{ room.room_type }}</p>
+      <p>Check-in: {{ booking.checkin }}</p>
+      <p>Check-out: {{ booking.checkout }}</p>
+      <p>Adults: {{ booking.adults }}</p>
+      <p>Children: {{ booking.children }}</p>
+      <p><strong>Total: £{{ booking.total_price }}</strong></p>
+    {% else %}
+      <p style="color:red;">Room details not found.</p>
+    {% endif %}
+  {% endif %}
 </div>
+{% endif %}
 
-<!-- CARD FORMAT SCRIPT -->
+<form method="POST" id="paymentForm" class="mt-4">
+  <label>Card Number</label>
+  <input
+    type="text"
+    name="card_number"
+    id="cardNumber"
+    class="form-control"
+    placeholder="1234 5678 9012 3456"
+    maxlength="19"
+    required
+  />
+
+  <label class="mt-3">Expiry Date</label>
+  <input
+    type="text"
+    name="expiry"
+    id="expiryDate"
+    class="form-control"
+    placeholder="MM/YY"
+    maxlength="5"
+    required
+  />
+
+  <label class="mt-3">CVC</label>
+  <input
+    type="text"
+    name="cvc"
+    id="cvc"
+    class="form-control"
+    placeholder="123"
+    maxlength="3"
+    required
+  />
+
+  <div id="errorMsg" style="color: red; margin-top: 5px"></div>
+
+  <button type="submit" class="btn btn-primary mt-4 w-100">Pay Now</button>
+</form>
+
 <script>
-  const cardInput = document.getElementById("card_number");
+document.addEventListener("DOMContentLoaded", function () {
+  const cardInput = document.getElementById("cardNumber");
+  const expiryInput = document.getElementById("expiryDate");
+  const cvcInput = document.getElementById("cvc");
+  const errorMsg = document.getElementById("errorMsg");
+  const form = document.getElementById("paymentForm");
 
-  cardInput.addEventListener("input", function () {
-    let value = cardInput.value.replace(/\D/g, "");
-    value = value.substring(0, 16);
-    value = value.replace(/(.{4})/g, "$1 ").trim();
-    cardInput.value = value;
+
+  cardInput.addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\D/g, "").slice(0,16);
+    value = value.replace(/(\d{4})(?=\d)/g, "$1 ");
+    e.target.value = value;
   });
-</script>
 
-<!-- EXPIRY FORMAT SCRIPT -->
-<script>
-  const expiryInput = document.getElementById("expiry");
 
-  expiryInput.addEventListener("input", function () {
-    let value = expiryInput.value.replace(/\D/g, "");
-    value = value.substring(0, 4);
+  expiryInput.addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\D/g, "").slice(0,4);
+    if(value.length > 2) value = value.slice(0,2) + "/" + value.slice(2);
+    e.target.value = value;
+  });
 
-    if (value.length > 2) {
-      value = value.slice(0, 2) + "/" + value.slice(2);
+  function validateCard() {
+    let errors = [];
+    const cardDigits = cardInput.value.replace(/\s/g, "");
+    if(!/^\d{16}$/.test(cardDigits)) errors.push("Card number must be 16 digits.");
+
+    const [month, year] = expiryInput.value.split("/");
+    if(!month || month < 1 || month > 12 || !year || year.length !== 2) errors.push("Expiry must be MM/YY.");
+
+    if(!/^\d{3}$/.test(cvcInput.value)) errors.push("CVC must be 3 digits.");
+
+    if(errors.length > 0) {
+      errorMsg.textContent = errors.join(" ");
+      return false;
+    } else {
+      errorMsg.textContent = "";
+      return true;
     }
+  }
 
-    expiryInput.value = value;
+  cardInput.addEventListener("input", validateCard);
+  expiryInput.addEventListener("input", validateCard);
+  cvcInput.addEventListener("input", validateCard);
+
+  form.addEventListener("submit", function (e) {
+    if(!validateCard()) e.preventDefault();
   });
+});
 </script>
 
 {% endblock %}

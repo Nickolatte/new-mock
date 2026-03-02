@@ -1,13 +1,11 @@
 {% extends "base.html" %} {% block title %}Booking{% endblock %} {% block
 content %}
-<h2 align="center" class="text-center">Book Zoo Tickets</h2>
+<h2 class="text-center mt-4">Book Zoo Tickets</h2>
 
 <form method="POST" class="mt-4" id="bookingForm">
-  <!-- Date -->
   <label>Date</label>
   <input type="date" class="date_str form-control" required name="date" />
 
-  <!-- Adults -->
   <label class="mt-3">Adults</label>
   <input
     type="number"
@@ -18,7 +16,6 @@ content %}
     value="1"
   />
 
-  <!-- Children -->
   <label class="mt-3">Children</label>
   <input
     type="number"
@@ -28,9 +25,15 @@ content %}
     value="0"
   />
 
-  <!-- Price Display -->
   <div class="mt-3">
-    <strong>Total Price: $<span id="totalPrice">0</span></strong>
+    <p>Breakdown:</p>
+    <ul>
+      <li>Adults (£17.50 each): <span id="adultPriceBreakdown">£0.00</span></li>
+      <li>
+        Children (£14.50 each): <span id="childPriceBreakdown">£0.00</span>
+      </li>
+    </ul>
+    <strong>Total Price: £<span id="totalPrice">0.00</span></strong>
   </div>
 
   <button type="submit" class="btn btn-primary mt-4 w-100">Book Now</button>
@@ -43,24 +46,28 @@ content %}
     const adultInput = document.querySelector('input[name="adults"]');
     const childInput = document.querySelector('input[name="children"]');
     const totalPriceEl = document.getElementById("totalPrice");
+    const adultBreakdownEl = document.getElementById("adultPriceBreakdown");
+    const childBreakdownEl = document.getElementById("childPriceBreakdown");
 
-    // Set your ticket prices
-    const adultPrice = 20; // $20 per adult
-    const childPrice = 10; // $10 per child
+    const adultPrice = 17.5;
+    const childPrice = 14.5;
 
     function calculatePrice() {
       const adults = parseInt(adultInput.value) || 0;
       const children = parseInt(childInput.value) || 0;
 
-      const total = adults * adultPrice + children * childPrice;
+      const adultTotal = adults * adultPrice;
+      const childTotal = children * childPrice;
+      const total = adultTotal + childTotal;
+
+      adultBreakdownEl.textContent = "£" + adultTotal.toFixed(2);
+      childBreakdownEl.textContent = "£" + childTotal.toFixed(2);
       totalPriceEl.textContent = total.toFixed(2);
     }
 
-    // Update price on input change
     adultInput.addEventListener("input", calculatePrice);
     childInput.addEventListener("input", calculatePrice);
 
-    // Initialize price
     calculatePrice();
   });
 </script>
