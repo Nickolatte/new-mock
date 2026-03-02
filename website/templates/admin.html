@@ -40,10 +40,7 @@ block content %}
 <a class="btn btn-primary" href="{{ url_for('views.add_room') }}">Add Room</a>
 <ul>
   {% for r in rooms %}
-  <li>
-    {{ r.room_number }} ({{ r.room_type }}) (Max Adults: {{ r.max_adults }}, Max
-    Children: {{ r.max_children }}) - ${{ r.price_per_night }}
-  </li>
+  <li>{{ r.room_number }} ({{ r.room_type }}) - ${{ r.price_per_night }}</li>
   {% endfor %}
 </ul>
 
