@@ -1,0 +1,80 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container mt-5" style="max-width: 500px">
+  <h2 class="mb-4 text-center">Payment Details</h2>
+
+  <form method="POST">
+    <!-- Card Number -->
+    <div class="mb-3">
+      <label class="form-label">Card Number</label>
+      <input
+        type="text"
+        name="card_number"
+        id="card_number"
+        class="form-control"
+        maxlength="19"
+        placeholder="1234 5678 9012 3456"
+        required
+      />
+    </div>
+
+    <!-- Expiry -->
+    <div class="mb-3">
+      <label class="form-label">Expiry (MM/YY)</label>
+      <input
+        type="text"
+        name="expiry"
+        id="expiry"
+        class="form-control"
+        maxlength="5"
+        placeholder="MM/YY"
+        required
+      />
+    </div>
+
+    <!-- CVV -->
+    <div class="mb-3">
+      <label class="form-label">CVV</label>
+      <input
+        type="text"
+        name="cvv"
+        class="form-control"
+        maxlength="4"
+        placeholder="123"
+        required
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Pay Now</button>
+  </form>
+</div>
+
+<!-- CARD FORMAT SCRIPT -->
+<script>
+  const cardInput = document.getElementById("card_number");
+
+  cardInput.addEventListener("input", function () {
+    let value = cardInput.value.replace(/\D/g, "");
+    value = value.substring(0, 16);
+    value = value.replace(/(.{4})/g, "$1 ").trim();
+    cardInput.value = value;
+  });
+</script>
+
+<!-- EXPIRY FORMAT SCRIPT -->
+<script>
+  const expiryInput = document.getElementById("expiry");
+
+  expiryInput.addEventListener("input", function () {
+    let value = expiryInput.value.replace(/\D/g, "");
+    value = value.substring(0, 4);
+
+    if (value.length > 2) {
+      value = value.slice(0, 2) + "/" + value.slice(2);
+    }
+
+    expiryInput.value = value;
+  });
+</script>
+
+{% endblock %}

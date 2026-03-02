@@ -38,3 +38,9 @@ class HotelBooking(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='hotel_bookings', lazy=True)
+
+
+class TicketPrice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    adult = db.Column(db.Float, default=20.0)   
+    child = db.Column(db.Float, default=10.0)   
