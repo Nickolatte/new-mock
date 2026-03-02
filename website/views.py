@@ -99,38 +99,32 @@ def signup():
 @views.route('/booking', methods=['GET', 'POST'])
 @login_required
 def booking():
-    import datetime
-    from flask import session
-
     if request.method == 'POST':
+        import datetime
         booking_date_str = request.form.get('date')
         adults = request.form.get('adults', type=int)
         children = request.form.get('children', type=int)
-
         if not booking_date_str:
             flash('Please select a booking date.', category='error')
-
         elif (adults is None or adults < 0) or (children is None or children < 0):
             flash('Ticket numbers must be zero or positive.', category='error')
-
         else:
+            from .models import Booking
             try:
-                booking_date = datetime.datetime.strptime(
-                    booking_date_str, '%Y-%m-%d'
-                ).date()
+                booking_date = datetime.datetime.strptime(booking_date_str, '%Y-%m-%d').date()
             except ValueError:
                 flash('Invalid date format.', category='error')
                 return render_template('booking.html', user=current_user)
-
-            
-            session['ticket_booking'] = {
-                'booking_date': booking_date_str,
-                'adults': adults,
-                'children': children
-            }
-
-            return redirect(url_for('views.payment'))
-
+            new_booking = Booking(
+                bookingdate=booking_date,
+                adultticket=adults,
+                childticket=children,
+                user_id=current_user.id
+            )
+            db.session.add(new_booking)
+            db.session.commit()
+            flash('Booking successful!', category='success')
+            return redirect(url_for('views.booking'))
     return render_template('booking.html', user=current_user)
 
 
@@ -191,17 +185,10 @@ def hotelbooking():
 @login_required
 def confirm_booking(room_id):
     from datetime import datetime
-    from flask import session
     from .models import HotelBooking, Room
 
-    checkin = datetime.strptime(
-        request.form.get('checkin'), '%Y-%m-%d'
-    ).date()
-
-    checkout = datetime.strptime(
-        request.form.get('checkout'), '%Y-%m-%d'
-    ).date()
-
+    checkin = datetime.strptime(request.form.get('checkin'), '%Y-%m-%d').date()
+    checkout = datetime.strptime(request.form.get('checkout'), '%Y-%m-%d').date()
     adults = int(request.form.get('adults'))
     children = int(request.form.get('children'))
 
@@ -218,15 +205,21 @@ def confirm_booking(room_id):
         flash("Sorry, this room was just booked.", "error")
         return redirect(url_for('views.hotelbooking'))
 
-    session['hotel_booking'] = {
-        'room_id': room.id,
-        'checkin': checkin.strftime('%Y-%m-%d'),
-        'checkout': checkout.strftime('%Y-%m-%d'),
-        'adults': adults,
-        'children': children
-    }
+    new_booking = HotelBooking(
+        checkin=checkin,
+        checkout=checkout,
+        adults=adults,
+        children=children,
+        room_id=room.id,
+        user_id=current_user.id
+    )
 
-    return redirect(url_for('views.payment'))
+    db.session.add(new_booking)
+    db.session.commit()
+
+    flash("Room booked successfully!", "success")
+    return redirect(url_for('views.home'))
+
 
 @views.route('/add-room', methods=['GET', 'POST'])
 @login_required
@@ -301,94 +294,6 @@ def my_bookings():
     return render_template('my_bookings.html', ticket_bookings=ticket_bookings, hotel_bookings=hotel_bookings, user=current_user)
 
 
-import re
-from datetime import datetime
-from flask import session
-
-@views.route('/payment', methods=['GET', 'POST'])
-@login_required
-def payment():
-    from .models import Booking, HotelBooking
-
-    if request.method == 'POST':
-
-        # Get form data
-        card_number = request.form.get('card_number', '').replace(" ", "")
-        expiry = request.form.get('expiry', '')
-        cvv = request.form.get('cvv', '')
-
-        # --------------------
-        # VALIDATION
-        # --------------------
-
-        # Card must be exactly 16 digits
-        if not card_number.isdigit() or len(card_number) != 16:
-            flash("Card number must be exactly 16 digits.", "error")
-            return redirect(url_for('views.payment'))
-
-        # Expiry must be MM/YY
-        if not re.match(r'^\d{2}/\d{2}$', expiry):
-            flash("Expiry must be in MM/YY format.", "error")
-            return redirect(url_for('views.payment'))
-
-        # Optional: check month is valid (01–12)
-        month, year = expiry.split('/')
-        if int(month) < 1 or int(month) > 12:
-            flash("Invalid expiry month.", "error")
-            return redirect(url_for('views.payment'))
-
-        # CVV must be 3 or 4 digits
-        if not cvv.isdigit() or len(cvv) not in [3, 4]:
-            flash("CVV must be 3 or 4 digits.", "error")
-            return redirect(url_for('views.payment'))
-
-        # --------------------
-        # SAVE BOOKING AFTER "PAYMENT"
-        # --------------------
-
-        # Ticket booking
-        if 'ticket_booking' in session:
-            data = session.pop('ticket_booking')
-
-            new_booking = Booking(
-                bookingdate=datetime.strptime(data['booking_date'], '%Y-%m-%d').date(),
-                adultticket=data['adults'],
-                childticket=data['children'],
-                user_id=current_user.id
-            )
-
-            db.session.add(new_booking)
-            db.session.commit()
-
-            flash("Payment successful! Ticket booked.", "success")
-            return redirect(url_for('views.home'))
-
-        # Hotel booking
-        if 'hotel_booking' in session:
-            data = session.pop('hotel_booking')
-
-            new_booking = HotelBooking(
-                checkin=datetime.strptime(data['checkin'], '%Y-%m-%d').date(),
-                checkout=datetime.strptime(data['checkout'], '%Y-%m-%d').date(),
-                adults=data['adults'],
-                children=data['children'],
-                room_id=data['room_id'],
-                user_id=current_user.id
-            )
-
-            db.session.add(new_booking)
-            db.session.commit()
-
-            flash("Payment successful! Hotel booked.", "success")
-            return redirect(url_for('views.home'))
-
-        # If no booking found
-        flash("No pending booking found.", "error")
-        return redirect(url_for('views.home'))
-
-    return render_template('payment.html', user=current_user)
-
-
 #Admin functions
 
 @views.route('/admin')
@@ -423,8 +328,4 @@ def toggle_admin(user_id):
     db.session.commit()
     flash(f"{user.email} admin status changed.", "success")
     return redirect(url_for('views.admin'))
-
-
-
-
 
