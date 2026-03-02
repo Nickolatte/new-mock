@@ -5,8 +5,6 @@ from . import db
 from flask_login import login_user, login_required, logout_user, current_user
 
 
-
-
 views = Blueprint('views', __name__)
 
 
@@ -96,7 +94,7 @@ def signup():
     return render_template('signup.html', user=current_user)
 
 
-from flask import session, redirect, url_for
+#from flask import session, redirect, url_for
 
 @views.route('/booking', methods=['GET', 'POST'])
 @login_required
@@ -111,7 +109,7 @@ def booking():
             flash('Please select a booking date.', 'error')
             return redirect(url_for('views.booking'))
 
-        total_price = adults*20 + children*10
+        total_price = adults*17.50 + children*14.50
 
 
         session['booking'] = {
