@@ -279,6 +279,14 @@ def my_bookings():
     return render_template('my_bookings.html', ticket_bookings=ticket_bookings, hotel_bookings=hotel_bookings, user=current_user)
 
 
+@views.route('/usersettings', methods=['GET', 'POST'])
+@login_required
+def usersettings():
+    if request.method == 'POST':
+        # Handle form submission for user settings
+        pass
+    return render_template('usersettings.html', user=current_user)
+
 #Admin functions
 
 @views.route('/admin')

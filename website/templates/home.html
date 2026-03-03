@@ -1,58 +1,69 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
-%}
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
 
 <div
   id="myCarousel"
   class="carousel slide carousel-fade"
-  data-ride="carousel"
-  data-interval="3000"
+  data-bs-ride="carousel"
+  data-bs-interval="3000"
 >
-  <ol class="carousel-indicators">
-    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-    <li data-target="#myCarousel" data-slide-to="1"></li>
-    <li data-target="#myCarousel" data-slide-to="2"></li>
-  </ol>
 
+  <!-- Indicators -->
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2"></button>
+  </div>
+
+  <!-- Slides -->
   <div class="carousel-inner">
     <div class="carousel-item active">
-      <img src="/static/images/tiger.png" class="d-block w-100" />
+      <img src="/static/images/tiger.png" class="d-block w-100" alt="Tiger">
     </div>
 
     <div class="carousel-item">
-      <img src="/static/images/giraffe.png" class="d-block w-100" />
+      <img src="/static/images/giraffe.png" class="d-block w-100" alt="Giraffe">
     </div>
 
     <div class="carousel-item">
-      <img src="/static/images/elephant.png" class="d-block w-100" />
+      <img src="/static/images/elephant.png" class="d-block w-100" alt="Elephant">
     </div>
   </div>
 
-  <a
+  <!-- Controls -->
+  <button
     class="carousel-control-prev"
-    href="#myCarousel"
-    role="button"
-    data-slide="prev"
+    type="button"
+    data-bs-target="#myCarousel"
+    data-bs-slide="prev"
   >
     <span class="carousel-control-prev-icon"></span>
-  </a>
+  </button>
 
-  <a
+  <button
     class="carousel-control-next"
-    href="#myCarousel"
-    role="button"
-    data-slide="next"
+    type="button"
+    data-bs-target="#myCarousel"
+    data-bs-slide="next"
   >
     <span class="carousel-control-next-icon"></span>
-  </a>
+  </button>
+
 </div>
 
-<h3>Welcome to Riget Zoo Adventure</h3>
+<h3 class="mt-4">Welcome to Riget Zoo Adventure</h3>
+
 {% if user.is_authenticated %}
 <p>Welcome, <strong>{{ first_name }} {{ last_name }}</strong>!</p>
 {% endif %}
-<br />
+
+<br>
+
 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. ...</p>
-<br />
+
+<br>
+
 <p>
   Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt, asperiores
   laborum? Fugit, necessitatibus suscipit veritatis nemo dignissimos eos et
@@ -62,9 +73,6 @@
   optio incidunt necessitatibus id rem, rerum itaque. Eos, dicta! Recusandae
   obcaecati quo, fugit, pariatur nobis quae blanditiis facilis officia similique
   animi laudantium eligendi deserunt quam natus sit sint labore quisquam.
-  Aliquid error delectus sed voluptates sequi amet illum magni, fugiat officia
-  recusandae vitae facilis sapiente voluptatibus, voluptatem dolorum officiis
-  praesentium?
 </p>
 
 {% endblock %}
