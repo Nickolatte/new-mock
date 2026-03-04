@@ -283,7 +283,7 @@ def my_bookings():
 @login_required
 def usersettings():
     if request.method == 'POST':
-        # Handle form submission for user settings
+
         pass
     return render_template('usersettings.html', user=current_user)
 
